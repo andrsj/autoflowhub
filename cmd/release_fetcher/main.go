@@ -9,10 +9,6 @@ import (
 	"github.com/mrlutik/autoflowhub/internal/adapters"
 )
 
-type Release struct {
-	TagName string `json:"tag_name"`
-}
-
 func main() {
 	var accessToken = os.Getenv("GITHUB_TOKEN")
 
