@@ -23,17 +23,13 @@ jobs:
           go build -v ./...
           go test -v ./...
         
-      - name: Get current version
-        id: version
+
+      - name: Get version and create a new release branch
+        if: ${{ success() }}
         run: |
           chmod +x ./scripts/version.sh
           export NEW_VERSION=$(./scripts/version.sh)
           echo "Current version is $NEW_VERSION"
-          echo "::set-output name=current_version::$CURRENT_VERSION"
-
-      - name: Bump version and create a new release branch
-        if: ${{ success() }}
-        run: |
           export NEW_BRANCH="release/${NEW_VERSION}"
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
