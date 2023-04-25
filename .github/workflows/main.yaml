@@ -35,7 +35,7 @@ jobs:
           git config user.email "actions@github.com"
           git checkout -b $NEW_BRANCH
           git commit --allow-empty -m "Bump version to ${NEW_VERSION}"
-          git remote set-url origin https://${{ secrets.GH_ACTIONS_TOKEN }}@github.com/MrLutik/autoflowhub.git
+          git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/MrLutik/autoflowhub.git
           git push --set-upstream https://github.com/MrLutik/autoflowhub.git $NEW_BRANCH --force --quiet
 
 
