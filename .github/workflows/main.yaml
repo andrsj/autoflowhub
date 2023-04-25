@@ -27,13 +27,16 @@ jobs:
         if: ${{ success() }}
         run: |
           export CURRENT_VERSION=$(git describe --tags --abbrev=0)
-          export NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
+          export NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1 "." $2 "." $3 + 1}')
           export NEW_BRANCH="release/v${NEW_VERSION}"
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git checkout -b $NEW_BRANCH
           git commit --allow-empty -m "Bump version to ${NEW_VERSION}"
-          git push --set-upstream https://${{ secrets.GH_ACTIONS_TOKEN }}@github.com/MrLutik/autoflowhub.git $NEW_BRANCH
+          git remote set-url origin https://${{ secrets.GH_ACTIONS_TOKEN }}@github.com/MrLutik/autoflowhub.git
+          git push --set-upstream https://github.com/MrLutik/autoflowhub.git $NEW_BRANCH --force --quiet
+
+
 
 
   create-pull-request:
