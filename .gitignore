@@ -33,6 +33,8 @@ Thumbs.db
 *.dylib
 
 # Folders
+bin/
+data/
 node_modules/
 vendor/
 dist/

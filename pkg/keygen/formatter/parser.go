@@ -3,7 +3,6 @@ package formatter
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 )
 
 type Key struct {
@@ -21,13 +20,6 @@ func ParseListCMDOutput(output []byte) ([]Key, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't unmarshal JSON output: %w", err)
 	}
-
-	// Output to console
-	formattedOutput, err := json.MarshalIndent(keys, "", "  ")
-	if err != nil {
-		return nil, fmt.Errorf("can't marshal the JSON: %w", err)
-	}
-	log.Println(string(formattedOutput))
 
 	return keys, nil
 }
@@ -48,13 +40,6 @@ func ParseAddCMDOutput(output []byte) (*KeyWithMnemonic, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't unmarshal JSON output: %w", err)
 	}
-
-	// Output to console
-	formattedOutput, err := json.MarshalIndent(key, "", "  ")
-	if err != nil {
-		return nil, fmt.Errorf("can't marshal the JSON: %w", err)
-	}
-	log.Println(string(formattedOutput))
 
 	return &key, nil
 }
