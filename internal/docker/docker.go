@@ -53,13 +53,13 @@ func GetBlockHeight(dockerClient *client.Client, containerName string) string {
 func RunTransaction(dockerClient *client.Client, containerName, source, destination, amount, demon string, txAmount, sleepTimeBetweenTxInMeeleseconds int) {
 	//    sekaid tx bank send $SOURCE $DESTINATION "${AMOUNT}${DENOM}" --keyring-backend=test --chain-id=$NETWORK_NAME --fees "${FEE_AMOUNT}${FEE_DENOM}" --output=json --yes --home=$SEKAID_HOME | txAwait 180
 	for i := 0; i < txAmount; i++ {
-		command := "sekaid tx bank send " + source + " " + destination + " " + amount + "ukex --keyring-backend=test --chain-id=$NETWORK_NAME --fees 100ukex --output=json --yes --home=$SEKAID_HOME "
+		command := "sekaid tx bank send " + source + " " + destination + " " + amount + "ukex --keyring-backend=test --chain-id=$NETWORK_NAME --fees 100ukex --output=json --yes --home=$SEKAID_HOME " //можна додати --broadcast-mode=async але воно просто ігнорує помилку але не віксить її
 		fmt.Println(command)
-		_, err := ExecCommandInContainer(containerName, []string{`bash`, `-c`, command}, dockerClient)
+		out, err := ExecCommandInContainer(containerName, []string{`bash`, `-c`, command}, dockerClient)
 		if err != nil {
 			panic(err)
 		}
-		// fmt.Println(string(out))
+		fmt.Println(string(out))
 		if sleepTimeBetweenTxInMeeleseconds > 0 {
 			time.Sleep(time.Millisecond * time.Duration(sleepTimeBetweenTxInMeeleseconds))
 		}
@@ -134,9 +134,12 @@ func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitG
 		go func(wallet int) {
 			total := wallet + divider
 
-			for i := wallet + 1; i < total-1; i++ {
-				RunTransaction(dockerClient, "validator", users[wallet].Key, users[i].Key, strconv.Itoa(amountToOneAcc), "ukex", 1, 10050)
-				fmt.Println(wallet, total, "TOOOOTAL")
+			for i := wallet + 1; i < total; i++ {
+				// if wallet+1 > total {
+				// 	break
+				// }
+				RunTransaction(dockerClient, "validator", users[wallet].Key, users[i].Key, strconv.Itoa(amountToOneAcc), "ukex", 1, 10000)
+				fmt.Println(i, wallet, total, "TOOOOTAL")
 
 			}
 			wg.Done()

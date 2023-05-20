@@ -37,7 +37,7 @@ func main() {
 	for a, b := range usirs {
 		b.Key = string("pepega" + strconv.Itoa(a))
 	}
-	docker.DisruptTokensBetweenAllAccounts(client, waitGroup, 10000, usirs[:])
+	docker.DisruptTokensBetweenAllAccounts(client, waitGroup, 10000, arr[:])
 	//блокуєм виконання за допомогою читання з канала, запис відбудеться лише тоді коли блок досягне певної висоти
 	// <-c
 
