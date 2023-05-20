@@ -119,27 +119,31 @@ func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitG
 		divider = totalUsers
 		firstIterationWalletsSum = totalAmountOftokens
 	}
+	timestarted := time.Now()
 	fmt.Println("DIVIDERS", divider)
 	for i := 0; i < totalUsers; i = i + divider {
 		fmt.Println(i)
 		firstIterationWallets = append(firstIterationWallets, i)
 	}
 	fmt.Println("FIRST WALLET", firstIterationWallets)
-	for _, w := range firstIterationWallets {
+	for n, w := range firstIterationWallets {
 
-		RunTransaction(dockerClient, "validator", "validator", users[w].Key, strconv.Itoa(firstIterationWalletsSum), "ukex", 1, 0)
+		RunTransaction(dockerClient, "validator", "validator", users[w].Key, strconv.Itoa(firstIterationWalletsSum), "ukex", 1, 10050)
 		//sending from 1st generation wallet to second others
 		wg.Add(1)
 		go func(wallet int) {
 			total := wallet + divider
 
 			for i := wallet + 1; i < total-1; i++ {
-				RunTransaction(dockerClient, "validator", users[wallet].Key, users[i].Key, strconv.Itoa(amountToOneAcc), "ukex", 1, 0)
+				RunTransaction(dockerClient, "validator", users[wallet].Key, users[i].Key, strconv.Itoa(amountToOneAcc), "ukex", 1, 10050)
 				fmt.Println(wallet, total, "TOOOOTAL")
 
 			}
 			wg.Done()
 		}(w)
+		fmt.Println("FIRST WALLET INERATION NUMBER ", n)
+		fmt.Println("TIME STARTED ", timestarted)
+		fmt.Println("TIME SINCE   ", time.Since(timestarted))
 	}
 }
 
