@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strconv"
 	"sync"
 	"time"
 
@@ -12,12 +13,16 @@ import (
 	"github.com/docker/docker/client"
 )
 
+type User struct {
+	Key string
+}
+
 func BlockListener(dockerClient *client.Client, containerName, blockToListen string, wg *sync.WaitGroup, c chan int) {
 	var currentBlockHeight string
 	for currentBlockHeight != blockToListen {
 		time.Sleep(time.Second * 1)
 		currentBlockHeight = GetBlockHeight(dockerClient, containerName)
-		fmt.Println("current", currentBlockHeight)
+		fmt.Println("block to listen ", blockToListen)
 
 	}
 	c <- 1
@@ -42,22 +47,23 @@ func GetBlockHeight(dockerClient *client.Client, containerName string) string {
 	} else {
 		fmt.Println("latest_block_height not found")
 	}
-	fmt.Println(string(out))
+	// fmt.Println(string(out))
 	return value
 }
-func RunTransaction(dockerClient *client.Client, containerName, source, destination, amount, demon string, wg *sync.WaitGroup, txAmount, sleepTimeBetweenTx int) {
+func RunTransaction(dockerClient *client.Client, containerName, source, destination, amount, demon string, txAmount, sleepTimeBetweenTxInMeeleseconds int) {
 	//    sekaid tx bank send $SOURCE $DESTINATION "${AMOUNT}${DENOM}" --keyring-backend=test --chain-id=$NETWORK_NAME --fees "${FEE_AMOUNT}${FEE_DENOM}" --output=json --yes --home=$SEKAID_HOME | txAwait 180
 	for i := 0; i < txAmount; i++ {
 		command := "sekaid tx bank send " + source + " " + destination + " " + amount + "ukex --keyring-backend=test --chain-id=$NETWORK_NAME --fees 100ukex --output=json --yes --home=$SEKAID_HOME "
 		fmt.Println(command)
-		out, err := ExecCommandInContainer(containerName, []string{`bash`, `-c`, command}, dockerClient)
+		_, err := ExecCommandInContainer(containerName, []string{`bash`, `-c`, command}, dockerClient)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(string(out))
-		time.Sleep(time.Second * time.Duration(sleepTimeBetweenTx))
+		// fmt.Println(string(out))
+		if sleepTimeBetweenTxInMeeleseconds > 0 {
+			time.Sleep(time.Millisecond * time.Duration(sleepTimeBetweenTxInMeeleseconds))
+		}
 	}
-	defer wg.Done()
 	//sekaid tx bank send kira1rh9wufxa9sxre53zapsvajsvyqvfvrhmckndta kira1cv89u97thwm837uzlcxh8yc0hele0jxwsklk93 100ukex --keyring-backend=test --chain-id=$NETWORK_NAME --fees 100ukex --output=json --yes --home=$SEKAID_HOME | txAwait 180
 
 }
@@ -85,3 +91,75 @@ func ExecCommandInContainer(containerID string, command []string, Cli *client.Cl
 	}
 	return output, nil
 }
+
+// func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, users []User, summToAddIntoOneAcc int) {
+// 	totalAmount := len(users) * summToAddIntoOneAcc
+
+//		// stringAmountToOneAcc := strconv.Itoa(summToAddIntoOneAcc)
+//		// for i, u := range users {
+//		// 	fmt.Println(i, u, totalAmount)
+//		// 	wg.Add(1)
+//		// 	RunTransaction(dockerClient, "validator", "validator", u.Key, stringAmountToOneAcc, "ukex", wg, 1, 10)
+//		// }
+//		// v > 0 > 1,2 >
+//		//1 >>3,4
+//		// 2 >>5,6
+//		// calculateSendings(dockerClient, summToAddIntoOneAcc, totalAmount, 8000, users)
+//	}
+func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitGroup, amountToOneAcc int, users []User) {
+	totalUsers := len(users)
+	totalAmountOftokens := totalUsers * amountToOneAcc
+	var firstIterationWallets []int
+	fmt.Println(totalUsers)
+	divider := totalUsers / 100
+	var firstIterationWalletsSum int
+	if divider > 0 {
+		firstIterationWalletsSum = totalAmountOftokens / divider
+	} else {
+		divider = totalUsers
+		firstIterationWalletsSum = totalAmountOftokens
+	}
+	fmt.Println("DIVIDERS", divider)
+	for i := 0; i < totalUsers; i = i + divider {
+		fmt.Println(i)
+		firstIterationWallets = append(firstIterationWallets, i)
+	}
+	fmt.Println("FIRST WALLET", firstIterationWallets)
+	for _, w := range firstIterationWallets {
+
+		RunTransaction(dockerClient, "validator", "validator", users[w].Key, strconv.Itoa(firstIterationWalletsSum), "ukex", 1, 0)
+		//sending from 1st generation wallet to second others
+		wg.Add(1)
+		go func(wallet int) {
+			total := wallet + divider
+
+			for i := wallet + 1; i < total-1; i++ {
+				RunTransaction(dockerClient, "validator", users[wallet].Key, users[i].Key, strconv.Itoa(amountToOneAcc), "ukex", 1, 0)
+				fmt.Println(wallet, total, "TOOOOTAL")
+
+			}
+			wg.Done()
+		}(w)
+	}
+}
+
+// func sendToSecondGenerationWallets(dockerClient *client.Client, wg *sync.WaitGroup, amountToOneAcc int, users []User) {
+
+// }
+
+// func calculateOwnStake(totalAmount, amountToOneAcc int) int {
+// 	ret := totalAmount - amountToOneAcc
+// 	if ret <= amountToOneAcc {
+// 		return 0
+// 	}
+// 	return ret
+// }
+
+// func findSmallestDivisor(num int) int {
+// 	for i := 2; i <= num; i++ {
+// 		if num%i == 0 {
+// 			return i
+// 		}
+// 	}
+// 	return num
+// }
