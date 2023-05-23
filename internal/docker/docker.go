@@ -13,7 +13,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-type User struct {
+type Userp struct {
 	Key string
 }
 
@@ -133,11 +133,11 @@ func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitG
 		wg.Add(1)
 		go func(wallet int) {
 			total := wallet + divider
-
+			// if wallet+1 > total {
+			// 	return
+			// }
 			for i := wallet + 1; i < total; i++ {
-				// if wallet+1 > total {
-				// 	break
-				// }
+
 				RunTransaction(dockerClient, "validator", users[wallet].Key, users[i].Key, strconv.Itoa(amountToOneAcc), "ukex", 1, 10000)
 				fmt.Println(i, wallet, total, "TOOOOTAL")
 
@@ -149,6 +149,131 @@ func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitG
 		fmt.Println("TIME SINCE   ", time.Since(timestarted))
 	}
 }
+
+type User struct {
+	Key     string
+	Balance int
+	Sent    bool
+}
+
+func AlgoritmTesting(users []*User, amountToOneAcc int) {
+	// totalUsers := len(users)
+	// // totalAmountOftokens := totalUsers * amountToOneAcc
+	// var firstIterationWallets [4]int
+	// firstgenerationDivider := totalUsers / 4
+	// firstIterationWallets[0] = 0
+	// firstIterationWallets[1] = firstgenerationDivider
+	// firstIterationWallets[2] = firstgenerationDivider + firstgenerationDivider
+	// firstIterationWallets[3] = firstgenerationDivider + firstgenerationDivider + firstgenerationDivider
+	// tokensSpreding(users, amountToOneAcc, totalAmountOftokens, 4)
+	// VALIDATOR.Balance = 99999999
+	// infiniteUser := &User{Balance: 1<<63 - 1}
+	// transferTokens(infiniteUser, users, 200, 2)
+	// fmt.Println(infiniteUser.Balance, COUNT)
+	// fmt.Println(users)
+	// for _, user := range users {
+	// 	fmt.Printf("Пользователь %v: баланс - %d\n", user.Key, user.Balance)
+	// }
+
+}
+func TestFunc(users []*User) {
+	// users := make([]*User, 10000)
+	for i := range users {
+		users[i] = &User{Balance: 0}
+	}
+	for _, b := range users {
+		fmt.Println(b)
+	}
+
+	// бесконечный пользователь
+	infiniteUser := &User{Balance: 1<<63 - 1}
+
+	queue := []*User{infiniteUser}
+	queue = append(queue, users...)
+
+	i := 0
+	for len(queue) > 0 {
+		user := queue[0]
+		queue = queue[1:]
+
+		if user.Sent {
+			continue
+		}
+
+		recipients := []*User{}
+		if i < len(users) {
+			recipients = append(recipients, users[i])
+			queue = append(queue, users[i])
+			i++
+		}
+
+		transferTokens(user, recipients, 200)
+	}
+
+	for i, user := range users {
+		if i > 10 { // Выводим только первые 10 пользователей для упрощения
+			break
+		}
+		fmt.Printf("User[%d] balance: %d\n", i, user.Balance)
+	}
+	fmt.Printf("InfiniteUser balance: %d\n", infiniteUser.Balance)
+}
+
+var COUNT int
+
+func transferTokens(from *User, to []*User, amount int) {
+	if from.Sent {
+		return
+	}
+
+	from.Balance -= amount * len(to)
+	from.Sent = true
+	for i := range to {
+		to[i].Balance += amount
+	}
+}
+
+// func distributeCoins(users []*User, senderIdx, coins int) {
+// 	if coins == 0 || len(users) == 0 {
+// 		return
+// 	}
+
+// 	if senderIdx >= len(users) || users[senderIdx].Balance < coins {
+// 		return
+// 	}
+
+// 	users[senderIdx].Balance -= coins
+
+// 	receiver1 := (senderIdx + 1) % len(users)
+// 	receiver2 := (senderIdx + 2) % len(users)
+
+// 	users[receiver1].Balance += coins / 2
+// 	users[receiver2].Balance += coins - (coins / 2)
+
+// 	remainingCoins := coins / 2
+// 	distributeCoins(users, receiver1, remainingCoins)
+// 	distributeCoins(users, receiver2, coins-remainingCoins)
+// }
+
+// var VALIDATOR TestUsers
+
+// func tokensSpreding(users []*TestUsers, amountToOneAcc, totalAmount, divider int) {
+// 	var curentLayerOfAccs []*TestUsers
+// 	position := 0
+// 	for i := 0; i < divider; i++ {
+// 		fmt.Println(len(users), divider)
+// 		position = (len(users) / divider) * i
+// 		fmt.Println(position, "position")
+// 		curentLayerOfAccs = append(curentLayerOfAccs, users[position])
+// 		sendTokens(&VALIDATOR, curentLayerOfAccs[i], totalAmount/divider)
+// 	}
+
+// 	fmt.Println(curentLayerOfAccs, "curentLayerOfAccs")
+// }
+// func sendTokens(userFrom, userTo *TestUsers, amountToSend int) {
+// 	userFrom.Balance -= amountToSend
+// 	userTo.Balance += amountToSend
+// }
 
 // func sendToSecondGenerationWallets(dockerClient *client.Client, wg *sync.WaitGroup, amountToOneAcc int, users []User) {
 

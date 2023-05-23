@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/docker/docker/client"
 
@@ -12,6 +13,27 @@ import (
 
 func main() {
 
+	// var testUsers [10000]*docker.User
+	// for i := 0; i < len(testUsers); i++ {
+	// 	testUsers[i] = &docker.User{
+	// 		Balance: 0,
+	// 		Key:     "pepega" + strconv.Itoa(i),
+	// 	}
+	// }
+	// // fmt.Println((testUsers))
+
+	// for _, b := range testUsers {
+	// 	fmt.Println(b)
+	// }
+	// docker.AlgoritmTesting(testUsers[:], 3000)
+	// // for _, b := range testUsers {
+	// // 	fmt.Println(b, "final")
+	// // }
+	// docker.TestFunc(testUsers[:])
+	// for _, b := range testUsers {
+	// 	fmt.Println(b, "final")
+	// }
+	// os.Exit(1)
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
@@ -19,9 +41,9 @@ func main() {
 
 	waitGroup := &sync.WaitGroup{}
 
-	// waitGroup.Add(1)
-	// c := make(chan int)
-	// go docker.BlockListener(client, "validator", "925", waitGroup, c)
+	waitGroup.Add(1)
+	c := make(chan int)
+	go docker.BlockListener(client, "validator", "925", waitGroup, c)
 	var arr []docker.User = []docker.User{
 		{Key: "kira1u890hktk35k22y256lenaweuc86f23tnsawjl8"},
 		{Key: "kira1gf573vs5du5yfj3ck6mrkfplnqzqghek0rqlqa"},
@@ -38,20 +60,20 @@ func main() {
 		b.Key = string("pepega" + strconv.Itoa(a))
 	}
 	docker.DisruptTokensBetweenAllAccounts(client, waitGroup, 10000, arr[:])
-	//блокуєм виконання за допомогою читання з канала, запис відбудеться лише тоді коли блок досягне певної висоти
-	// <-c
+	// блокуєм виконання за допомогою читання з канала, запис відбудеться лише тоді коли блок досягне певної висоти
+	<-c
 
-	// for _, b := range arr {
-	// 	fmt.Println("add goutine")
-	// 	waitGroup.Add(1)
-	// 	go func(b *docker.User, wg *sync.WaitGroup) {
-	// 		fmt.Println("done")
-	// 		docker.RunTransaction(client, "validator", b.Key, b.Key, "1", "ukex", 1, 0)
-	// 		wg.Done()
-	// 	}(&b, waitGroup)
-	// 	time.Sleep(time.Millisecond * 100)
+	for _, b := range arr {
+		fmt.Println("add goutine")
+		waitGroup.Add(1)
+		go func(b *docker.User, wg *sync.WaitGroup) {
+			fmt.Println("done")
+			docker.RunTransaction(client, "validator", b.Key, b.Key, "1", "ukex", 1, 0)
+			wg.Done()
+		}(&b, waitGroup)
+		time.Sleep(time.Millisecond * 100)
 
-	// }
+	}
 
 	waitGroup.Wait()
 
