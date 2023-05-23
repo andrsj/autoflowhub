@@ -106,6 +106,7 @@ func ExecCommandInContainer(containerID string, command []string, Cli *client.Cl
 //		// 2 >>5,6
 //		// calculateSendings(dockerClient, summToAddIntoOneAcc, totalAmount, 8000, users)
 //	}
+
 func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitGroup, amountToOneAcc int, users []User) {
 	totalUsers := len(users)
 	totalAmountOftokens := totalUsers * amountToOneAcc
