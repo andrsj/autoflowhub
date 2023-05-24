@@ -30,6 +30,7 @@ There is no default values!`
 
 var KeysPath string
 var BlockToListen int
+var TxAmount int
 var rootCmd = &cobra.Command{
 	Use:   use,
 	Short: shortDescription,
@@ -41,8 +42,9 @@ var rootCmd = &cobra.Command{
 		sekaiContainer, _ := cmd.Flags().GetString("sekai")
 		count, _ := cmd.Flags().GetInt("count")
 		BlockToListen, _ = cmd.Flags().GetInt("blockToListen")
+		TxAmount, _ = cmd.Flags().GetInt("txAmount")
 		KeysPath = dirOfKeys
-		if home == "" || sekaiContainer == "" || keyringBackend == "" || dirOfKeys == "" || count <= 0 {
+		if home == "" || sekaiContainer == "" || keyringBackend == "" || dirOfKeys == "" || count < 0 {
 			cmd.Help()
 			log.Fatal("Please provide all required parameters: home, backend and positive count")
 		}
@@ -53,8 +55,10 @@ var rootCmd = &cobra.Command{
 		log.Println("Directory of keys:", dirOfKeys)
 		log.Println("Count:", count)
 		log.Println("Block to listen:", BlockToListen)
-
-		generating(sekaiContainer, home, keyringBackend, dirOfKeys, count)
+		log.Println("Amount of transactions:", TxAmount)
+		if count > 0 {
+			generating(sekaiContainer, home, keyringBackend, dirOfKeys, count)
+		}
 	},
 }
 
@@ -66,6 +70,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("sekai", "s", "", "Sekaid container name")
 	rootCmd.PersistentFlags().IntP("count", "c", 0, "Count of keys which will be added")
 	rootCmd.PersistentFlags().IntP("blockToListen", "b", 0, "which block to listen")
+	rootCmd.PersistentFlags().IntP("txAmount", "t", 0, "how much transactions from generated users you want")
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
@@ -74,7 +79,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
@@ -85,17 +89,22 @@ func main() {
 	waitGroup.Add(1)
 	c := make(chan int)
 	go idocker.BlockListener(client, "validator", strconv.Itoa(BlockToListen), waitGroup, c)
-	var arr []idocker.User = make([]idocker.User, len(list))
+	var arr []*idocker.User = make([]*idocker.User, len(list))
 	for i := range list {
-		arr[i].Key = list[i]
+		arr[i] = &idocker.User{Key: list[i], Balance: 0}
 	}
 	fmt.Println(arr)
-
+	disruptSum := TxAmount * 100
+	idocker.DisruptTokensBetweenAllAccounts(client, waitGroup, disruptSum, arr[:])
 	// блокуєм виконання за допомогою читання з канала, запис відбудеться лише тоді коли блок досягне певної висоти
 	<-c
-	idocker.DisruptTokensBetweenAllAccounts(client, waitGroup, 10000, arr[:])
 	waitGroup.Wait()
 
+	for _, u := range arr {
+		fmt.Println(u)
+	}
+	idocker.TransactionSpam(client, waitGroup, TxAmount, arr)
+	waitGroup.Wait()
 }
 
 func generating(containerName, homePath, keyringBackend, dirOfKeys string, count int) {

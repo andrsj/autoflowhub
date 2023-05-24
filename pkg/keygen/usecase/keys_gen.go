@@ -62,6 +62,7 @@ func (k *KeysClient) ListOfKeys() ([]string, error) {
 }
 
 func (k *KeysClient) GenerateKeys(count int) ([]string, error) {
+	
 	if count <= 0 {
 		return nil, fmt.Errorf("the count '%d' needs to be positive", count)
 	}

@@ -20,7 +20,7 @@ func main() {
 	waitGroup.Add(1)
 	c := make(chan int)
 	go docker.BlockListener(client, "validator", "925", waitGroup, c)
-	var arr []docker.User = []docker.User{
+	var arr []*docker.User = []*docker.User{
 		{Key: "kira1u890hktk35k22y256lenaweuc86f23tnsawjl8"},
 		{Key: "kira1gf573vs5du5yfj3ck6mrkfplnqzqghek0rqlqa"},
 		{Key: "kira1ymcmfmwqnh2vz86w5jf24h02sv7ey3reuaw7w2"},
