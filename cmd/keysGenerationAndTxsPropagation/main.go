@@ -93,7 +93,7 @@ func main() {
 	for i := range list {
 		arr[i] = &idocker.User{Key: list[i], Balance: 0}
 	}
-	fmt.Println(arr)
+	fmt.Println(len(arr), "LEEEEEEEEEEEEEEEEEN")
 	disruptSum := TxAmount * 100
 	idocker.DisruptTokensBetweenAllAccounts(client, waitGroup, disruptSum, arr[:])
 	// блокуєм виконання за допомогою читання з канала, запис відбудеться лише тоді коли блок досягне певної висоти
