@@ -28,37 +28,40 @@ count of keys which will be generated
 directory for saved address and mnemonic for keys
 There is no default values!`
 
+var KeyringBackend string
+var Home string
+var SekaiContainer string
 var KeysPath string
 var BlockToListen int
 var TxAmount int
+var Count int
+
 var rootCmd = &cobra.Command{
 	Use:   use,
 	Short: shortDescription,
 	Long:  longDescription,
 	Run: func(cmd *cobra.Command, _ []string) {
-		home, _ := cmd.Flags().GetString("home")
-		keyringBackend, _ := cmd.Flags().GetString("keyring-backend")
-		dirOfKeys, _ := cmd.Flags().GetString("keys-dir")
-		sekaiContainer, _ := cmd.Flags().GetString("sekai")
-		count, _ := cmd.Flags().GetInt("count")
+		Home, _ = cmd.Flags().GetString("home")
+		KeyringBackend, _ = cmd.Flags().GetString("keyring-backend")
+		KeysPath, _ = cmd.Flags().GetString("keys-dir")
+		SekaiContainer, _ = cmd.Flags().GetString("sekai")
+		Count, _ = cmd.Flags().GetInt("count")
 		BlockToListen, _ = cmd.Flags().GetInt("blockToListen")
 		TxAmount, _ = cmd.Flags().GetInt("txAmount")
-		KeysPath = dirOfKeys
-		if home == "" || sekaiContainer == "" || keyringBackend == "" || dirOfKeys == "" || count < 0 {
+
+		if Home == "" || SekaiContainer == "" || KeyringBackend == "" || KeysPath == "" || Count < 0 {
 			cmd.Help()
 			log.Fatal("Please provide all required parameters: home, backend and positive count")
 		}
 
-		log.Println("Sekai Container:", sekaiContainer)
-		log.Println("Home:", home)
-		log.Println("Backend:", keyringBackend)
-		log.Println("Directory of keys:", dirOfKeys)
-		log.Println("Count:", count)
+		log.Println("Sekai Container:", SekaiContainer)
+		log.Println("Home:", Home)
+		log.Println("Backend:", KeyringBackend)
+		log.Println("Directory of keys:", KeysPath)
+		log.Println("Count:", Count)
 		log.Println("Block to listen:", BlockToListen)
 		log.Println("Amount of transactions:", TxAmount)
-		if count > 0 {
-			generating(sekaiContainer, home, keyringBackend, dirOfKeys, count)
-		}
+
 	},
 }
 
@@ -71,17 +74,28 @@ func main() {
 	rootCmd.PersistentFlags().IntP("count", "c", 0, "Count of keys which will be added")
 	rootCmd.PersistentFlags().IntP("blockToListen", "b", 0, "which block to listen")
 	rootCmd.PersistentFlags().IntP("txAmount", "t", 0, "how much transactions from generated users you want")
+	fmt.Println("BLOCKBLOCK", BlockToListen)
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
+	}
+	client, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		panic(err)
 	}
 	reader := usecase.NewKeysReader(KeysPath)
 	list, err := reader.GetAllAddresses()
 	if err != nil {
 		panic(err)
 	}
-	client, err := client.NewClientWithOpts(client.FromEnv)
-	if err != nil {
-		panic(err)
+	fmt.Println(len(list), "list before")
+	n := len(list)
+	if n >= Count {
+		list = list[0:Count]
+		Count = 0
+		fmt.Println(len(list), "len of list ")
+	}
+	if Count > 0 {
+		generating(SekaiContainer, Home, KeyringBackend, KeysPath, Count)
 	}
 
 	waitGroup := &sync.WaitGroup{}
@@ -94,17 +108,26 @@ func main() {
 		arr[i] = &idocker.User{Key: list[i], Balance: 0}
 	}
 	fmt.Println(len(arr), "LEEEEEEEEEEEEEEEEEN")
+	fmt.Println(2)
+
 	disruptSum := TxAmount * 100
 	idocker.DisruptTokensBetweenAllAccounts(client, waitGroup, disruptSum, arr[:])
 	// блокуєм виконання за допомогою читання з канала, запис відбудеться лише тоді коли блок досягне певної висоти
+	fmt.Println(3)
+
 	<-c
+	fmt.Println(4)
+
 	waitGroup.Wait()
+	fmt.Println(5)
 
 	for _, u := range arr {
 		fmt.Println(u)
 	}
-	idocker.TransactionSpam(client, waitGroup, TxAmount, arr)
+	fmt.Println(1)
+	txcount := idocker.TransactionSpam(client, waitGroup, TxAmount, arr)
 	waitGroup.Wait()
+	fmt.Println(txcount)
 }
 
 func generating(containerName, homePath, keyringBackend, dirOfKeys string, count int) {
