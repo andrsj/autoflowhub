@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strconv"
+
 	// "strconv"
 	"sync"
 	"time"
@@ -13,9 +15,10 @@ import (
 	"github.com/docker/docker/client"
 )
 
-func BlockListener(dockerClient *client.Client, containerName, blockToListen string, wg *sync.WaitGroup, c chan int) {
+func BlockListener(dockerClient *client.Client, containerName string, blockToListen int, wg *sync.WaitGroup, c chan int) {
 	var currentBlockHeight string
-	for currentBlockHeight != blockToListen {
+	converted := strconv.Itoa(blockToListen)
+	for currentBlockHeight != converted {
 		time.Sleep(time.Second * 1)
 		currentBlockHeight = GetBlockHeight(dockerClient, containerName)
 		fmt.Println("block to listen ", blockToListen)

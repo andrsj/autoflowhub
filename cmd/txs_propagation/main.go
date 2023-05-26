@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	blockTolisten := 800
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
@@ -29,7 +30,7 @@ func main() {
 	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(1)
 	c := make(chan int)
-	go docker.BlockListener(client, "validator", "925", waitGroup, c)
+	go docker.BlockListener(client, "validator", blockTolisten, waitGroup, c)
 	<-c
 	// блокуєм виконання за допомогою читання з канала, запис відбудеться лише тоді коли блок досягне певної висоти
 

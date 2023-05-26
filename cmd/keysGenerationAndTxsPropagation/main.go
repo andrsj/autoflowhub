@@ -101,7 +101,7 @@ func main() {
 
 	waitGroup.Add(1)
 	c := make(chan int)
-	go idocker.BlockListener(client, "validator", strconv.Itoa(BlockToListen), waitGroup, c)
+	go idocker.BlockListener(client, "validator", BlockToListen, waitGroup, c)
 	var arr []*idocker.User = make([]*idocker.User, len(list))
 	for i := range list {
 		arr[i] = &idocker.User{Key: list[i], Balance: 0}
