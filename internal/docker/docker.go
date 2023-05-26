@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-	"strconv"
+	// "strconv"
 	"sync"
 	"time"
 
@@ -87,7 +87,7 @@ func ExecCommandInContainer(containerID string, command []string, Cli *client.Cl
 	}
 	return output, nil
 }
-func TransactionSpam(dockerClient *client.Client, wg *sync.WaitGroup, txAmount int, users []*User) int {
+func TransactionSpam(dockerClient *client.Client, wg *sync.WaitGroup, txAmount int, users []*User) *int {
 	fmt.Println("tx spamming")
 
 	amountOfIterationForOneAcc := txAmount / len(users)
@@ -96,36 +96,19 @@ func TransactionSpam(dockerClient *client.Client, wg *sync.WaitGroup, txAmount i
 	}
 	fmt.Println("TRANSAKTION AMOUNNT", txAmount, len(users), amountOfIterationForOneAcc)
 	txCount := 0
-	var mutex sync.Mutex
-
-	for u := range users {
-		wg.Add(1)
-		if txCount > txAmount {
-			defer wg.Done()
-			return txCount
+	for i := 0; i < amountOfIterationForOneAcc; i++ {
+		for u := range users {
+			RunTransaction(dockerClient, "validator", users[u].Key, users[u].Key, "1", "ukex", 1, 0)
+			time.Sleep(time.Millisecond * 100)
+			fmt.Println("+1tx", u)
+			txCount++
 		}
-		go func(u int) {
-			for i := 0; i < amountOfIterationForOneAcc; i++ {
-				if txCount > txAmount {
-					fmt.Println("DONEDONEDONE")
-					defer fmt.Println("transactions was made", txCount)
-					defer wg.Done()
-					return
-				}
-				fmt.Println("tx running u,i,txcount", u, i, txCount)
-				RunTransaction(dockerClient, "validator", users[u].Key, users[u].Key, "1", "ukex", 1, 10050)
-				mutex.Lock()
-				txCount++
-				mutex.Unlock()
-			}
-			wg.Done()
-		}(u)
-		time.Sleep(time.Millisecond * 1500)
+		fmt.Println(txCount)
 	}
-	defer fmt.Println("transactions was made", txCount)
+	// defer fmt.Println("transactions was made", txCount)
 
 	defer wg.Done()
-	return txCount
+	return &txCount
 
 }
 func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitGroup, amountToOneAcc int, users []*User) {
@@ -153,9 +136,9 @@ func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitG
 		fmt.Println("FIRST WALLET INERATION NUMBER ", n)
 		fmt.Println("TIME STARTED ", timestarted)
 		fmt.Println("TIME SINCE   ", time.Since(timestarted))
-		RunTransaction(dockerClient, "validator", "validator", users[w].Key, strconv.Itoa(firstIterationWalletsSum), "ukex", 1, 0)
+		// RunTransaction(dockerClient, "validator", "validator", users[w].Key, strconv.Itoa(firstIterationWalletsSum), "ukex", 1, 0)
 		users[w].Balance += firstIterationWalletsSum
-		//sending from 1st generation wallet to second others
+		//sending from 1st generation wallet to 2nd
 		wg.Add(1)
 		wgcount++
 		go func(wallet int) {
@@ -173,9 +156,9 @@ func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitG
 				fmt.Println(users[i], "heeeereeeee", total, firstIterationWallets, len(users))
 				fmt.Println(users[wallet], wallet, "sent from")
 				fmt.Println(users[i], i, "sent to")
-				RunTransaction(dockerClient, "validator", users[wallet].Key, users[i].Key, strconv.Itoa(amountToOneAcc), "ukex", 1, 10000)
+				// RunTransaction(dockerClient, "validator", users[wallet].Key, users[i].Key, strconv.Itoa(amountToOneAcc), "ukex", 1, 10000)
 				users[i].Balance += amountToOneAcc
-				users[w].Balance -= amountToOneAcc
+				users[wallet].Balance -= amountToOneAcc
 
 			}
 

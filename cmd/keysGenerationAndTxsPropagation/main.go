@@ -93,8 +93,7 @@ func main() {
 		list = list[0:Count]
 		Count = 0
 		fmt.Println(len(list), "len of list ")
-	}
-	if Count > 0 {
+	} else {
 		generating(SekaiContainer, Home, KeyringBackend, KeysPath, Count)
 	}
 
@@ -108,23 +107,18 @@ func main() {
 		arr[i] = &idocker.User{Key: list[i], Balance: 0}
 	}
 	fmt.Println(len(arr), "LEEEEEEEEEEEEEEEEEN")
-	fmt.Println(2)
 
 	disruptSum := TxAmount * 100
 	idocker.DisruptTokensBetweenAllAccounts(client, waitGroup, disruptSum, arr[:])
 	// блокуєм виконання за допомогою читання з канала, запис відбудеться лише тоді коли блок досягне певної висоти
-	fmt.Println(3)
 
 	<-c
-	fmt.Println(4)
 
 	waitGroup.Wait()
-	fmt.Println(5)
 
 	for _, u := range arr {
 		fmt.Println(u)
 	}
-	fmt.Println(1)
 	txcount := idocker.TransactionSpam(client, waitGroup, TxAmount, arr)
 	waitGroup.Wait()
 	fmt.Println(txcount)
