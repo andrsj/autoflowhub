@@ -98,19 +98,19 @@ func TransactionSpam(dockerClient *client.Client, wg *sync.WaitGroup, txAmount i
 		amountOfIterationForOneAcc = 1
 	}
 	fmt.Println("TRANSAKTION AMOUNNT", txAmount, len(users), amountOfIterationForOneAcc)
+	fmt.Println("TOTAL TRANSAKTION AMOUNNT", len(users)*amountOfIterationForOneAcc)
 	txCount := 0
 	for i := 0; i < amountOfIterationForOneAcc; i++ {
 		for u := range users {
 			RunTransaction(dockerClient, "validator", users[u].Key, users[u].Key, "1", "ukex", 1, 0)
+			//need to calibrate time in miliseconds
+			//for 1750000 transactions *100miliseconds = 48h
 			time.Sleep(time.Millisecond * 100)
 			fmt.Println("+1tx", u)
 			txCount++
 		}
 		fmt.Println(txCount)
 	}
-	// defer fmt.Println("transactions was made", txCount)
-
-	defer wg.Done()
 	return &txCount
 
 }
