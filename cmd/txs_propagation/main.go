@@ -12,12 +12,12 @@ import (
 
 func main() {
 	blockTolisten := 800
+	KeysPath := "keydir"
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
 	}
 
-	KeysPath := "keydir"
 	reader := usecase.NewKeysReader(KeysPath)
 	list, err := reader.GetAllAddresses()
 	if err != nil {
