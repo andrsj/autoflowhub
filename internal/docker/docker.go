@@ -151,13 +151,11 @@ func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitG
 		go func(wallet int) {
 			total := wallet + divider
 			if wallet+1 >= len(users) && total > len(users) {
-				fmt.Println(totalAmountOftokens, "total tokens ")
 				wg.Done()
 				return
 			}
 			for i := wallet + 1; i < total; i++ {
 				if wallet+1 > len(users) && i > len(users) {
-					fmt.Println(totalAmountOftokens, "total tokens ")
 					return
 				}
 				// fmt.Println(i, wallet, total, "TOOOOTAL")
@@ -170,7 +168,6 @@ func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitG
 			}
 			defer wg.Done()
 		}(w)
-		fmt.Println(totalAmountOftokens, "total tokens ")
 	}
 
 }
