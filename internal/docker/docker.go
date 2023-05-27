@@ -144,7 +144,7 @@ func DisruptTokensBetweenAllAccounts(dockerClient *client.Client, wg *sync.WaitG
 		fmt.Println("FIRST WALLET INERATION NUMBER ", n)
 		fmt.Println("TIME STARTED ", timestarted)
 		fmt.Println("TIME SINCE   ", time.Since(timestarted))
-		RunTransaction(dockerClient, "validator", "validator", users[w].Key, strconv.Itoa(firstIterationWalletsSum), "ukex", 1, 0)
+		RunTransaction(dockerClient, "validator", "validator", users[w].Key, strconv.Itoa(firstIterationWalletsSum), "ukex", 1, 10010)
 		users[w].Balance += firstIterationWalletsSum
 		//sending from 1st generation wallet to 2nd
 		wg.Add(1)
