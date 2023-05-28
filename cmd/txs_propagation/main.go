@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"sync"
 
 	"github.com/docker/docker/client"
@@ -11,8 +13,12 @@ import (
 )
 
 func main() {
-	blockTolisten := 800
-	KeysPath := "keydir"
+	n := os.Args[1]
+	blockTolisten, err := strconv.Atoi(n)
+	if err != nil {
+		panic(err)
+	}
+	KeysPath := "./keyTest2"
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
@@ -23,7 +29,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	var arr []*docker.User = make([]*docker.User, 2500)
+	var arr []*docker.User = make([]*docker.User, len(list))
 	for i := range list {
 		arr[i] = &docker.User{Key: list[i], Balance: 0}
 	}

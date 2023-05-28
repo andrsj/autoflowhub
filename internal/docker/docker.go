@@ -111,8 +111,8 @@ func TransactionSpam(dockerClient *client.Client, wg *sync.WaitGroup, txAmount i
 			RunTransaction(dockerClient, "validator", users[u].Key, users[u].Key, "1", "ukex", 1, 0)
 			//need to calibrate time in miliseconds
 			//for 1750000 transactions *100miliseconds = 48h
-			time.Sleep(time.Millisecond * 100)
-			fmt.Println("+1tx", u)
+			time.Sleep(time.Millisecond * 50)
+			fmt.Println("+1tx", txCount)
 			txCount++
 		}
 		fmt.Println(txCount)

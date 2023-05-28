@@ -12,7 +12,7 @@ import (
 
 func main() {
 	disruptSum := (7000000 / 4) * 100
-	KeysPath := "keydir"
+	KeysPath := "./keyTest2"
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
@@ -23,7 +23,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	var arr []*docker.User = make([]*docker.User, 2500)
+	var arr []*docker.User = make([]*docker.User, len(list))
 	for i := range list {
 		arr[i] = &docker.User{Key: list[i], Balance: 0}
 	}
