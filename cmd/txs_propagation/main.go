@@ -13,12 +13,16 @@ import (
 )
 
 func main() {
+	if len(os.Args) < 3 {
+		fmt.Printf("ERROR: \nUSSAGE: main <arg1> <arg2>\narg1=block to listen\narg2=folder with keys\n")
+		os.Exit(1)
+	}
 	n := os.Args[1]
 	blockTolisten, err := strconv.Atoi(n)
 	if err != nil {
 		panic(err)
 	}
-	KeysPath := "./keyTest2"
+	KeysPath := os.Args[2]
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
