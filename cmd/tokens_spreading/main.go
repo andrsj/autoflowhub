@@ -14,18 +14,19 @@ import (
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Printf("ERROR: \nUSSAGE: main <arg1> <arg2> <arg3>\narg1=total tx amount, if arg1=0 then default value=7000000/4 \narg2=folder with keys\n")
+		fmt.Printf("ERROR: \nUSSAGE: main <arg1> <arg2> \narg1=total tx amount, if arg1=0 then default value=7000000/4 \narg2=folder with keys\n")
 		os.Exit(1)
 	}
 	// disruptSum := (7000000 / 4) * 100
-	disruptSum, err := strconv.Atoi(os.Args[1])
+
+	txamount, err := strconv.Atoi(os.Args[1])
 	if err != nil {
 		panic(err)
 	}
+	disruptSum := txamount * 100
 	if disruptSum == 0 {
-		disruptSum = 7000000
+		disruptSum = 7000000 / 4 * 100
 	}
-	disruptSum = disruptSum * 100
 	KeysPath := os.Args[2]
 
 	client, err := client.NewClientWithOpts(client.FromEnv)
@@ -38,6 +39,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	if len(list) < 1 {
+		panic("keys list empty")
+	}
+	disruptSum += len(list)
 	var arr []*docker.User = make([]*docker.User, len(list))
 	for i := range list {
 		arr[i] = &docker.User{Key: list[i], Balance: 0}
